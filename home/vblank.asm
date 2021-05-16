@@ -141,8 +141,15 @@ VBlank0::
 	ld a, [wROMBankBackup]
 	rst Bankswitch
 
-	ldh a, [hSeconds]
-	ldh [hUnusedBackup], a
+; save 24 useless cycles to close rJOYP after UpdateJoypad
+; needed due to joypad interrupt in Gold/Silver
+	;ldh a, [hSeconds]
+	;ldh [hUnusedBackup], a
+
+; VBlank0 should be enough, as VBlank3-5 will never be active for our purposes
+	ld a, $30
+	ldh [rJOYP], a
+	ld h, h ; anything that's effectively a nop is fine to get to 24 cycles
 
 	ret
 

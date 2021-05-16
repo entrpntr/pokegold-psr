@@ -2070,6 +2070,7 @@ wLinkBattleRNs:: ds SERIAL_RNS_LENGTH
 
 NEXTU
 ; miscellaneous bytes
+wContinueFrameBuffer::
 wSkipMovesBeforeLevelUp::
 wRegisteredPhoneNumbers::
 wListMovesLineSpacing:: db

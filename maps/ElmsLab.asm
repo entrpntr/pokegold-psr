@@ -209,21 +209,8 @@ DidntChooseStarterScript:
 
 ElmDirectionsScript:
 	turnobject PLAYER, UP
-	opentext
-	writetext ElmDirectionsText1
-	waitbutton
-	closetext
-	turnobject ELMSLAB_ELM, LEFT
-	opentext
-	writetext ElmDirectionsText2
-	waitbutton
-	closetext
-	turnobject ELMSLAB_ELM, DOWN
-	opentext
-	writetext ElmDirectionsText3
-	promptbutton
-	waitsfx
 	addcellnum PHONE_ELM
+	opentext
 	writetext GotElmsNumberText
 	playsound SFX_REGISTER_PHONE_NUMBER
 	waitsfx

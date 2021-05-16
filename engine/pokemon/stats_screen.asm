@@ -655,63 +655,68 @@ LoadBluePage:
 	ret
 
 .PlaceOTInfo:
+	ld de, TextboxesString
+	hlcoord 0, 15
+	call PlaceString
+	lb bc, PRINTNUM_LEFTALIGN | 1, 3
+	ld de, hLog + 2
+	ld a, [hLogCount]
+	and $1
+	jr z, .skip
+	inc de
+
+.skip
+	hlcoord 2, 16
+	call PrintNum
+	inc de
+	hlcoord 6, 16
+	call PrintNum
+	inc de
+	hlcoord 2, 17
+	call PrintNum
+	inc de
+	hlcoord 6, 17
+	call PrintNum
+	ld de, FrameString
 	hlcoord 0, 9
-	ld de, IDNoString
 	call PlaceString
 	hlcoord 0, 12
-	ld de, OTString
+	ld de, DVsString
 	call PlaceString
+	ldh a, [hContinueFrame]
+	sub 74 ; hContinueFrame=74 when frame perfect
+	ld [wContinueFrameBuffer], a
 	hlcoord 2, 10
-	ld de, wTempMonID
-	lb bc, PRINTNUM_LEADINGZEROS | 2, 5
+	lb bc, PRINTNUM_LEFTALIGN | 1, 3
+	ld de, wContinueFrameBuffer
 	call PrintNum
-	ld hl, .OTNamePointers
-	call GetNicknamePointer
-; OT name
-	ld a, [wMonType]
-	cp BOXMON
-	ld a, BANK(sBoxMonOTs)
-	call z, OpenSRAM
-	ld de, wStringBuffer1
-	push de
-	ld bc, NAME_LENGTH
-	call CopyBytes
-	pop de
-	ld a, [wMonType]
-	cp BOXMON
-	call z, CloseSRAM
-	callfar CorrectNickErrors
-	push de
+	hlcoord 2, 13
+	ld a, [wTempMonDVs]
+	call .PlaceHex
+	ld a, [wTempMonDVs + 1]
 
-; Adjust coordinate of OT name based on index of nickname terminator
-	lb bc, 0, -1
-.loop
-	inc c
-	ld a, [de]
-	inc de
-	cp "@"
-	jr nz, .loop
-; remove left padding if name was 8-10 chars (somehow?)
-	ld a, NAME_LENGTH - 1
-	sub c
-	cp NAME_LENGTH - PLAYER_NAME_LENGTH
-; otherwise, use 2 spaces of left padding
-	jr c, .ok
-	ld a, NAME_LENGTH - PLAYER_NAME_LENGTH - 1
-.ok
-	ld c, a
-	hlcoord 0, 13
-	add hl, bc
-; that's finally over ... place string, quit forever
-	pop de
-	call PlaceString
+.PlaceHex:
+	ld b, a
+	swap a
+	and $f
+	add "0"
+	or "A"
+	ld [hli], a
+	ld a, b
+	and $f
+	add "0"
+	or "A"
+	ld [hli], a
 	ret
 
-.OTNamePointers:
-	dw wPartyMonOTs
-	dw wOTPartyMonOTs
-	dw sBoxMonOTs
-	dw wBufferMonOT
+TextboxesString:
+	db "TEXTBOXES/@"
+
+FrameString:
+	db "FRAME/@"
+
+DVsString:
+	db "DVs/@"
 
 IDNoString:
 	db "<ID>№.@"
