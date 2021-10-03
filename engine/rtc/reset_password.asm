@@ -31,6 +31,8 @@ _ResetClock::
 	srl a
 	add $78 ; first bank with save data
 	call XferSave
+	ld a, 4
+	ldh [rSVBK], a
 	pop bc
 	ld a, b
 	cp SELECT
@@ -48,6 +50,8 @@ _ResetClock::
 	ld de, sMysteryGiftItem
 	ld bc, sLuckyIDNumber + 2 - sMysteryGiftItem
 	call CopyBytes
+	ld a, 1
+	ldh [rSVBK], a
 	xor a
 	ld [MBC3SRamEnable], a
 	ret

@@ -9,4 +9,6 @@ XferSave::
 	call CopyBytes
 	ld a, BANK(_ResetClock)
 	ld [MBC3RomBank], a
+	ld a, 1
+	ldh [rSVBK], a
 	ret
