@@ -173,4 +173,5 @@ ENDC
 hContinueFrame:: db
 hLogReq:: db
 hLogCount:: db
-hLog:: ds 17
+hLog:: ds 16
+	ds 1

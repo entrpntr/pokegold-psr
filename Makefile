@@ -80,6 +80,11 @@ ifeq ($(DEBUG),1)
 RGBASMFLAGS += -E
 endif
 
+# `make IGT_AS_RTC=1` will create ROM with IGT acting as RTC
+ifeq ($(IGT_AS_RTC),1)
+RGBASMFLAGS += -D IGT_AS_RTC
+endif
+
 $(pokegold_obj):         RGBASMFLAGS += -D _GOLD
 $(pokesilver_obj):       RGBASMFLAGS += -D _SILVER
 $(pokegold_debug_obj):   RGBASMFLAGS += -D _GOLD -D _DEBUG
