@@ -385,7 +385,7 @@ TrainerCard_Page2_PrintStatus:
 	hlcoord 3, 15
 	ld de, .Save
 	call PlaceString
-	;call CloseSRAM
+;	call CloseSRAM
 	ret
 
 .RTC

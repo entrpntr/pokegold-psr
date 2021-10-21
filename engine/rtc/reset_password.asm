@@ -1,176 +1,254 @@
-; Note for future: Gold/Silver have a ton more readily free space for savs
-_ResetClock::
+_ResetClock:
 	call ClearTilemap
 	call GetMemSGBLayout
 	call LoadStandardFont
 	call LoadFontsExtra
 	ld de, MUSIC_MAIN_MENU
 	call PlayMusic
-	hlcoord 1, 1
-	ld de, .Title
-	call PlaceString
-	ld hl, .MenuHeader
+	ld hl, .PasswordAskResetClockText
+	call PrintText
+	ld hl, .NoYes_MenuHeader
 	call CopyMenuHeader
-	call InitScrollingMenu
-	call ScrollingMenu
-	ld b, a
-	cp B_BUTTON
+	call VerticalMenu
+	ret c
+	ld a, [wMenuCursorY]
+	cp 1
 	ret z
-	ld a, [wMenuSelection]
-	cp -1
-	ret z
-	push bc
-	ld b, a
-	ld hl, $4000
-	and $3
-	swap a
-	add h
-	ld h, a
-	ld a, b
-	srl a
-	srl a
-	add $78 ; first bank with save data
-	call XferSave
-	ld a, 4
-	ldh [rSVBK], a
-	pop bc
-	ld a, b
-	cp SELECT
-	ld a, SRAM_ENABLE
-	ld [MBC3SRamEnable], a
-	ld a, BANK("Save")
-	ld [MBC3SRamBank], a
-	jr z, .diff
-	ld hl, $d000
-	ld de, sOptions
-	ld bc, sBox - sOptions
-	call CopyBytes
-	xor a
-	ld [MBC3SRamBank], a
-	ld de, sMysteryGiftItem
-	ld bc, sLuckyIDNumber + 2 - sMysteryGiftItem
-	call CopyBytes
-	ld a, 1
-	ldh [rSVBK], a
-	xor a
-	ld [MBC3SRamEnable], a
+	call ClockResetPassword
+	jr c, .wrongpassword
+	ld a, BANK(sRTCStatusFlags)
+	call OpenSRAM
+	ld a, $80
+	ld [sRTCStatusFlags], a
+	call CloseSRAM
+	ld hl, .PasswordAskResetText
+	call PrintText
 	ret
 
-.diff
-	hlcoord 0, 0
-	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
+.wrongpassword
+	ld hl, .PasswordWrongText
+	call PrintText
+	ret
+
+.PasswordAskResetText:
+	text_far _PasswordAskResetText
+	text_end
+
+.PasswordWrongText:
+	text_far _PasswordWrongText
+	text_end
+
+.PasswordAskResetClockText:
+	text_far _PasswordAskResetClockText
+	text_end
+
+.NoYes_MenuHeader:
+	db 0 ; flags
+	menu_coords 14, 7, SCREEN_WIDTH - 1, TEXTBOX_Y - 1
+	dw .NoYes_MenuData
+	db 1 ; default option
+
+.NoYes_MenuData:
+	db STATICMENU_CURSOR | STATICMENU_NO_TOP_SPACING ; flags
+	db 2 ; items
+	db "NO@"
+	db "YES@"
+
+ClockResetPassword:
+	call .CalculatePassword
+	push de
+	ld hl, wStringBuffer2
+	ld bc, 5
+	xor a
+	call ByteFill
+	ld a, 4
+	ld [wStringBuffer2 + 5], a
+	ld hl, .PasswordAskEnterText
+	call PrintText
+.loop
+	call .updateIDdisplay
+.loop2
+	call JoyTextDelay
+	ldh a, [hJoyLast]
+	ld b, a
+	and A_BUTTON
+	jr nz, .confirm
+	ld a, b
+	and D_PAD
+	jr z, .loop2
+	call .dpadinput
+	ld c, 3
+	call DelayFrames
+	jr .loop
+
+.confirm
+	call .ConvertDecIDToBytes
+	pop de
+	ld a, e
+	cp l
+	jr nz, .nope
+	ld a, d
+	cp h
+	jr nz, .nope
+	and a
+	ret
+
+.nope
+	scf
+	ret
+
+.PasswordAskEnterText:
+	text_far _PasswordAskEnterText
+	text_end
+
+.updateIDdisplay
+	hlcoord 14, 15
+	ld de, wStringBuffer2
+	ld c, 5
+.loop3
+	ld a, [de]
+	add "0"
+	ld [hli], a
+	inc de
+	dec c
+	jr nz, .loop3
+	hlcoord 14, 16
+	ld bc, 5
 	ld a, " "
 	call ByteFill
-	hlcoord 0, 0
-	ld de, $d000
-	ld bc, sBox - sOptions
-	inc b
-	inc c
-	jr .diff_loop
-
-.diff_check
-	push de
-	ld a, [de]
-	push af
-	ld a, d
-	xor $70
-	ld d, a
-	ld a, [de]
-	pop de
-	cp d
-	pop de
-	call nz, .PlaceDiff
-	inc de
-
-.diff_loop
-	dec c
-	jr nz, .diff_check
-	dec b
-	jr nz, .diff_check
-	xor a
-	ld [MBC3SRamEnable], a
-	inc a
-	ld [hBGMapMode], a
-	ei
-
-.wait
-	call DelayFrame
-	jr .wait
-
-.PlaceDiff:
-	push bc
-	push af
-	ld a, d
-	xor $f0
-	call .PlaceHex
-	ld a, e
-	call .PlaceHex
-	inc hl
-	pop af
-	call .PlaceHex
-	lb bc, 0, 3
-	add hl, bc
-	pop bc
-	ld a, h
-	cp HIGH(wTilemapEnd)
-	ret nz
-	ld a, l
-	cp LOW(wTilemapEnd)
-	ret nz
-	lb bc, 1, 1
+	hlcoord 14, 16
+	ld a, [wStringBuffer2 + 5]
+	ld e, a
+	ld d, 0
+	add hl, de
+	ld [hl], "▲"
 	ret
 
-.PlaceHex:
-	ld b, a
-	swap a
-	and $f
-	add "0"
-	or "A"
-	ld [hli], a
+.dpadinput
 	ld a, b
-	and $f
-	add "0"
-	or "A"
-	ld [hli], a
+	and D_LEFT
+	jr nz, .left
+	ld a, b
+	and D_RIGHT
+	jr nz, .right
+	ld a, b
+	and D_UP
+	jr nz, .up
+	ld a, b
+	and D_DOWN
+	jr nz, .down
 	ret
 
-.Title
-	db "Select a save file@"
-
-.MenuHeader
-	db MENU_BACKUP_TILES
-	menu_coords 1, 4, SCREEN_WIDTH - 2, SCREEN_HEIGHT - 2
-	dw .MenuData
-	db 1
-
-.MenuData
-	db STATICMENU_CURSOR | STATICMENU_PLACE_TITLE
-	db 6, 0
-	db SCROLLINGMENU_ITEMS_NORMAL
-	dba .Numbers
-	dba .Name
-	dba NULL
-	dba NULL
-
-.Name
-	ld a, [wMenuSelection]
-	cp -1
+.left
+	ld a, [wStringBuffer2 + 5]
+	and a
 	ret z
-	push de
-	ld hl, .Strings
-	ld bc, $11
+	dec a
+	ld [wStringBuffer2 + 5], a
+	ret
+
+.right
+	ld a, [wStringBuffer2 + 5]
+	cp 4
+	ret z
+	inc a
+	ld [wStringBuffer2 + 5], a
+	ret
+
+.up
+	call .getcurrentdigit
+	ld a, [hl]
+	cp 9
+	jr z, .wraparound_up
+	inc a
+	ld [hl], a
+	ret
+
+.wraparound_up
+	ld [hl], 0
+	ret
+
+.down
+	call .getcurrentdigit
+	ld a, [hl]
+	and a
+	jr z, .wraparound_down
+	dec a
+	ld [hl], a
+	ret
+
+.wraparound_down
+	ld [hl], 9
+	ret
+
+.getcurrentdigit
+	ld a, [wStringBuffer2 + 5]
+	ld e, a
+	ld d, 0
+	ld hl, wStringBuffer2
+	add hl, de
+	ret
+
+.ConvertDecIDToBytes:
+	ld hl, 0
+	ld de, wStringBuffer2 + 4
+	ld bc, 1
+	call .ConvertToBytes
+	ld bc, 10
+	call .ConvertToBytes
+	ld bc, 100
+	call .ConvertToBytes
+	ld bc, 1000
+	call .ConvertToBytes
+	ld bc, 10000
+.ConvertToBytes:
+	ld a, [de]
+	dec de
+	push hl
+	ld hl, 0
 	call AddNTimes
-	ld d, h
-	ld e, l
+	ld c, l
+	ld b, h
 	pop hl
-	jp PlaceString
+	add hl, bc
+	ret
 
-; update .Numbers and .Strings using custom tool along with .sav files
-.Numbers
-	db 0
-	db -1
-	db 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-	db -1
+.CalculatePassword:
+	ld a, BANK(sPlayerData)
+	call OpenSRAM
+	ld de, 0
+	ld hl, sPlayerData + (wPlayerID - wPlayerData)
+	ld c, 2
+	call .ComponentFromNumber
+	ld hl, sPlayerData + (wPlayerName - wPlayerData)
+	ld c, NAME_LENGTH_JAPANESE - 1
+	call .ComponentFromString
+	ld hl, sPlayerData + (wMoney - wPlayerData)
+	ld c, 3
+	call .ComponentFromNumber
+	call CloseSRAM
+	ret
 
-.Strings
-	ds 16 * $11
+.ComponentFromNumber:
+	ld a, [hli]
+	add e
+	ld e, a
+	ld a, 0
+	adc d
+	ld d, a
+	dec c
+	jr nz, .ComponentFromNumber
+	ret
+
+.ComponentFromString:
+	ld a, [hli]
+	cp "@"
+	ret z
+	add e
+	ld e, a
+	ld a, 0
+	adc d
+	ld d, a
+	dec c
+	jr nz, .ComponentFromString
+	ret

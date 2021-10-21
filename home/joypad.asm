@@ -310,8 +310,6 @@ JoyTextDelay::
 	ldh a, [hInMenu]
 	and a
 	ldh a, [hJoyPressed]
-; Note: hInMenu is 0 on start menu, so B press to exit is logged here
-; May not be avoidable, but can display more textboxes as a fallback
 	jr z, .notinmenu
 	ldh a, [hJoyDown]
 	ldh [hJoyLast], a
