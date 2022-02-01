@@ -1,4 +1,4 @@
-# Pokémon Gold and Silver [![Build Status][travis-badge]][travis]
+# Pokémon Gold and Silver [![Build Status][ci-badge]][ci]
 
 This is a disassembly of Pokémon Gold and Pokémon Silver.
 
@@ -15,7 +15,7 @@ To set up the repository, see [INSTALL.md](INSTALL.md).
 ## See also
 
 - **Discord:** [pret][discord]
-- **IRC:** [freenode#pret][irc]
+- **IRC:** [libera#pret][irc]
 
 Other disassembly projects:
 
@@ -37,6 +37,6 @@ Other disassembly projects:
 [pokefirered]: https://github.com/pret/pokefirered
 [pokeemerald]: https://github.com/pret/pokeemerald
 [discord]: https://discord.gg/d5dubZ3
-[irc]: https://kiwiirc.com/client/irc.freenode.net/?#pret
-[travis]: https://travis-ci.org/pret/pokegold
-[travis-badge]: https://travis-ci.org/pret/pokegold.svg?branch=master
+[irc]: https://web.libera.chat/?#pret
+[ci]: https://github.com/pret/pokegold/actions
+[ci-badge]: https://github.com/pret/pokegold/actions/workflows/main.yml/badge.svg

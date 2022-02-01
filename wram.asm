@@ -373,6 +373,13 @@ wCardFlipFaceUpCard:: db
 wDiscardPile:: ds 4 * 6
 wDiscardPileEnd::
 
+; beta poker game
+wBetaPokerSGBPals:: db
+	ds 2
+wBetaPokerSGBAttr:: db
+wBetaPokerSGBCol:: db
+wBetaPokerSGBRow:: db
+
 NEXTU
 ; unused memory game
 wMemoryGameCards:: ds 9 * 5
@@ -386,15 +393,6 @@ wMemoryGameNumberTriesRemaining:: db
 wMemoryGameLastMatches:: ds 5
 wMemoryGameCounter:: db
 wMemoryGameNumCardsMatched:: db
-
-NEXTU
-; beta poker game
-	ds 50
-wBetaPokerSGBPals:: db
-	ds 2
-wBetaPokerSGBAttr:: db
-wBetaPokerSGBCol:: db
-wBetaPokerSGBRow:: db
 
 NEXTU
 ; unown puzzle
@@ -1289,6 +1287,7 @@ wTileRight:: db
 
 wTilePermissions:: db
 
+wMenuMetadata::
 wWindowStackPointer:: dw
 wMenuJoypad:: db
 wMenuSelection:: db
@@ -1296,8 +1295,8 @@ wMenuSelectionQuantity:: db
 wWhichIndexSet:: db
 wScrollingMenuCursorPosition:: db
 wWindowStackSize:: db
-
 	ds 8
+wMenuMetadataEnd::
 
 ; menu header
 wMenuHeader::
@@ -1343,6 +1342,7 @@ wMenuData_ScrollingMenuFunction3:: ds 3
 ENDU
 wMenuDataEnd::
 
+wMoreMenuData::
 w2DMenuData::
 w2DMenuCursorInitY:: db
 w2DMenuCursorInitX:: db
@@ -1366,8 +1366,8 @@ wMenuCursorY:: db
 wMenuCursorX:: db
 wCursorOffCharacter:: db
 wCursorCurrentTile:: dw
-
 	ds 3
+wMoreMenuDataEnd::
 
 wOverworldDelay:: db
 wTextDelayFrames:: db
@@ -2207,7 +2207,7 @@ wMapStatus:: db
 wMapEventStatus:: db
 
 wScriptFlags::
-; bit 3: priority jump
+; bit 3: run deferred script
 	db
 	ds 1
 wScriptFlags2::
@@ -2228,10 +2228,10 @@ wScriptStack:: ds 3 * 5
 wScriptVar:: db
 wScriptDelay:: db
 
-wPriorityScriptBank::
+wDeferredScriptBank::
 wScriptTextBank::
 	db
-wPriorityScriptAddr::
+wDeferredScriptAddr::
 wScriptTextAddr::
 	dw
 	ds 1
